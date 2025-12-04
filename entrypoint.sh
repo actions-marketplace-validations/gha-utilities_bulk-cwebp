@@ -62,6 +62,8 @@ trap 'failure "LINENO" "BASH_LINENO" "${?}"' ERR
 set -Ee -o functrace
 
 
+VERBOSE="${VERBOSE:-${INPUT_VERBOSE:-0}}"
+
 _source_directory="${INPUT_SOURCE_DIRECTORY:?Undefined source directory}"
 _find_regex="${INPUT_FIND_REGEX:?Undefined find -regex value}"
 _find_regextype="${INPUT_FIND_REGEXTYPE:?Undefined find -regextype value}"
@@ -86,10 +88,10 @@ fi
 
 _command_find=(find "${_source_directory}" -type f)
 if (( ${#_find_regex} )); then
-	_command_magick+=(-regex "${_find_regex}")
+	_command_find+=(-regex "${_find_regex}")
 fi
 if (( ${#_find_regextype} )); then
-	_command_magick+=(-regextype "${_find_regextype}")
+	_command_find+=(-regextype "${_find_regextype}")
 fi
 _command_find+=(-print0)
 
@@ -108,7 +110,7 @@ while read -rd '' _source_path; do
 	fi
 
 	# shellcheck disable=SC2206
-	_command_cwebp=("${_exec_cwebp}" -o "${_destination_path}" ${_cwebp_opts} -- "${_destination_path}")
+	_command_cwebp=("${_exec_cwebp}" -o "${_destination_path}" ${_cwebp_opts} -- "${_source_path}")
 
 	if ((VERBOSE)); then
 		printf >&2 '_source_dirname -> %s\n' "${_source_dirname}"
@@ -117,9 +119,9 @@ while read -rd '' _source_path; do
 		printf >&2 '_destination_path -> %s\n' "${_destination_path}"
 
 		if (( ${#_cwebp_opts} )); then
-			printf >&2 '%s -o "%s" %s -- "%s"\n' "${_exec_cwebp}" "${_destination_path}" "${_cwebp_opts}" "${_destination_path}"
+			printf >&2 '%s -o "%s" %s -- "%s"\n' "${_exec_cwebp}" "${_destination_path}" "${_cwebp_opts}" "${_source_path}"
 		else
-			printf >&2 '%s -o "%s" -- "%s"\n' "${_exec_cwebp}" "${_destination_path}" "${_destination_path}"
+			printf >&2 '%s -o "%s" -- "%s"\n' "${_exec_cwebp}" "${_destination_path}" "${_source_path}"
 		fi
 	fi
 
